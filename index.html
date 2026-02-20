@@ -255,6 +255,9 @@ function render() {
     });
     if (prevDate && dias.indexOf(prevDate) !== -1) {
       dateFilter.value = prevDate;
+    } else if (dias.length > 0) {
+      // Por defecto seleccionar la fecha más reciente (hoy)
+      dateFilter.value = dias[dias.length - 1];
     }
 
     // Province filter
