@@ -49,7 +49,7 @@ select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid v
 .btn-excel:hover{opacity:.85}
 
 .provinces-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem}
-.prov-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.prov-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
 .prov-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
 .prov-card.expanded{grid-column:1/-1}
 .prov-header{padding:.75rem;display:flex;justify-content:space-between;align-items:center;background:var(--surface2)}
@@ -349,24 +349,38 @@ function renderProvinces() {
   provs.forEach(function(p) {
     var valid = p.municipios.filter(function(m){ return m.min !== null && m.max !== null; });
     if (!valid.length) return;
-    // Tomar el primer registro válido (capital)
-    var m = valid[0];
-    var mediaStr = (m.media !== null && m.media !== undefined) ? m.media.toFixed(1) + '\u00b0' : '-';
+    var mins = valid.map(function(m){ return m.min; });
+    var maxs = valid.map(function(m){ return m.max; });
+    var minVal = Math.min.apply(null, mins);
+    var maxVal = Math.max.apply(null, maxs);
+    var isExp = expandedProv === p.nombre;
+    var sorted = sortMunicipios(p.municipios);
 
-    html += '<div class="prov-card">';
+    var rows = '';
+    sorted.forEach(function(m) {
+      var isCap = m.capital;
+      var mediaStr = (m.media !== null && m.media !== undefined) ? m.media.toFixed(1) + '\u00b0' : '-';
+      rows += '<tr class="' + (isCap ? 'capital' : '') + '">';
+      rows += '<td class="city ' + (isCap ? 'is-capital' : '') + '">' + m.nombre + (isCap ? ' \u2605' : '') + '</td>';
+      rows += '<td class="temp-min">' + (m.min !== null ? m.min + '\u00b0' : '-') + '</td>';
+      rows += '<td class="temp-max">' + (m.max !== null ? m.max + '\u00b0' : '-') + '</td>';
+      rows += '<td class="temp-media">' + mediaStr + '</td>';
+      rows += '</tr>';
+    });
+
+    var escapedName = p.nombre.replace(/'/g, "\\'");
+    html += '<div class="prov-card ' + (isExp ? 'expanded' : '') + '" onclick="toggleProv(\'' + escapedName + '\')">';
     html += '<div class="prov-header"><div>';
     html += '<h3>' + p.nombre + '</h3>';
+    html += '<span class="mun-count">' + valid.length + ' estaciones</span>';
     html += '</div><div class="prov-stats">';
-    html += '<span class="t-min">' + m.min + '\u00b0</span>';
+    html += '<span class="t-min">' + minVal + '\u00b0</span>';
     html += '<span style="color:var(--muted)"> / </span>';
-    html += '<span class="t-max">' + m.max + '\u00b0</span>';
+    html += '<span class="t-max">' + maxVal + '\u00b0</span>';
     html += '</div></div>';
-    html += '<div class="prov-temps">';
-    html += '<span>M\u00edn <strong>' + m.min + '\u00b0</strong></span>';
-    html += '<span>M\u00e1x <strong>' + m.max + '\u00b0</strong></span>';
-    html += '<span>Media <strong>' + mediaStr + '</strong></span>';
-    html += '</div>';
-    html += '</div>';
+    html += '<div class="prov-body"><table class="prov-table">';
+    html += '<thead><tr><th>Municipio</th><th>M\u00edn</th><th>M\u00e1x</th><th>Media</th></tr></thead>';
+    html += '<tbody>' + rows + '</tbody></table></div></div>';
   });
 
   grid.innerHTML = html || '<div class="loading">No se encontraron resultados</div>';
@@ -410,7 +424,7 @@ function updateView() {
 
 // Excel XLSX download
 function downloadExcel() {
-  var regs = getFilteredRegistros().filter(function(r){ return r.min !== null && r.max !== null; });
+  var regs = getFilteredRegistros().filter(function(r){ return r.capital && r.min !== null && r.max !== null; });
   regs.sort(function(a,b){
     var pa = (a.codigo || '').substring(0,2);
     var pb = (b.codigo || '').substring(0,2);
