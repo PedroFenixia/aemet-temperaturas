@@ -241,7 +241,7 @@ function render() {
   if (!DATA) return;
   try {
     document.getElementById('updated').textContent = 'Actualizado: ' + (DATA.actualizado || '--');
-    document.getElementById('total-badge').textContent = (DATA.total_municipios || 0) + ' capitales';
+    document.getElementById('total-badge').textContent = (DATA.total_municipios || 0) + ' municipios';
     var dias = DATA.dias_disponibles || [];
     document.getElementById('days-badge').textContent = dias.length + ' d\u00edas';
 
