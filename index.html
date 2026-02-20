@@ -416,7 +416,7 @@ function renderFullTable() {
   });
 
   const sorted = sortMunicipios(all);
-  const display = sorted.slice(0, 500);
+  const display = sorted.slice(0, 10000);
 
   tbody.innerHTML = display.map(m => {
     const mediaStr = m.media !== null && m.media !== undefined ? m.media.toFixed(1) + '\u00b0' : '-';
