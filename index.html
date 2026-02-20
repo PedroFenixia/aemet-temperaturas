@@ -108,6 +108,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;b
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -418,7 +419,7 @@ function updateView() {
   document.getElementById('table-view').className = 'table-wrap' + (currentView === 'table' ? ' visible' : '');
 }
 
-// Excel CSV download
+// Excel XLSX download
 function downloadExcel() {
   var regs = getFilteredRegistros().filter(function(r){ return r.min !== null && r.max !== null; });
   regs.sort(function(a,b){
@@ -431,33 +432,28 @@ function downloadExcel() {
     return 0;
   });
 
-  var BOM = '\uFEFF';
-  var sep = ';';
-  var lines = ['Provincia' + sep + 'Cod.INE' + sep + 'Fecha' + sep + 'M\u00e1xima' + sep + 'M\u00ednima' + sep + 'T'];
+  var rows = [['Provincia', 'Cod.INE', 'Fecha', 'M\u00e1xima', 'M\u00ednima', 'T']];
   regs.forEach(function(r) {
-    var codProv = parseInt((r.codigo || '').substring(0,2)) || '';
-    var codINE = parseInt(r.codigo) || r.codigo;
-    var media = (r.media !== null && r.media !== undefined) ? r.media.toFixed(2).replace('.', ',') : '';
-    lines.push(
-      codProv + sep +
-      codINE + sep +
-      formatDate(r.fecha) + sep +
-      (r.max !== null ? r.max : '') + sep +
-      (r.min !== null ? r.min : '') + sep +
-      media
-    );
+    rows.push([
+      parseInt((r.codigo || '').substring(0,2)) || '',
+      parseInt(r.codigo) || r.codigo,
+      formatDate(r.fecha),
+      r.max,
+      r.min,
+      r.media !== null && r.media !== undefined ? Math.round(r.media * 100) / 100 : ''
+    ]);
   });
 
-  var csv = BOM + lines.join('\r\n');
-  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'temperaturas_aemet_' + (new Date().toISOString().slice(0,10)) + '.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // Column widths
+  ws['!cols'] = [{wch:10},{wch:10},{wch:10},{wch:9},{wch:9},{wch:9}];
+
+  // Header style + capital row highlight (light blue bg)
+  // SheetJS community doesn't support styles, but the data is correct
+  XLSX.utils.book_append_sheet(wb, ws, 'Temperaturas');
+  XLSX.writeFile(wb, 'temperaturas_aemet_' + (new Date().toISOString().slice(0,10)) + '.xlsx');
 }
 
 // Events
