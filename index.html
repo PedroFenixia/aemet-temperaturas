@@ -46,7 +46,8 @@ select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid v
 .btn-group button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .btn-group button:hover:not(.active){border-color:var(--blue)}
 .btn-excel{padding:.45rem .85rem;background:var(--green);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.75rem;font-weight:600;transition:opacity .15s}
-.btn-excel:hover{opacity:.85}
+.btn-excel:hover:not(:disabled){opacity:.85}
+.btn-excel:disabled{background:var(--muted);cursor:not-allowed;opacity:.5}
 
 .provinces-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem}
 .prov-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
@@ -423,7 +424,27 @@ function updateView() {
 }
 
 // Excel XLSX download
+function isExcelAvailable() {
+  var now = new Date();
+  var h = now.getHours();
+  var m = now.getMinutes();
+  return (h > 11 || (h === 11 && m >= 30));
+}
+
+function updateExcelButton() {
+  var btn = document.getElementById('btn-excel');
+  if (!btn) return;
+  if (isExcelAvailable()) {
+    btn.disabled = false;
+    btn.title = 'Descargar Excel (solo capitales)';
+  } else {
+    btn.disabled = true;
+    btn.title = 'Disponible a partir de las 11:30';
+  }
+}
+
 function downloadExcel() {
+  if (!isExcelAvailable()) return;
   var regs = getFilteredRegistros().filter(function(r){ return r.capital && r.min !== null && r.max !== null; });
   regs.sort(function(a,b){
     var pa = (a.codigo || '').substring(0,2);
@@ -437,10 +458,13 @@ function downloadExcel() {
 
   var rows = [['Provincia', 'Cod.INE', 'Fecha', 'M\u00e1xima', 'M\u00ednima', 'T']];
   regs.forEach(function(r) {
+    // Convertir fecha a Date para que Excel la reconozca como fecha
+    var parts = r.fecha.split('-');
+    var fechaDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
     rows.push([
       parseInt((r.codigo || '').substring(0,2)) || '',
       parseInt(r.codigo) || r.codigo,
-      formatDate(r.fecha),
+      fechaDate,
       r.max,
       r.min,
       r.media !== null && r.media !== undefined ? Math.round(r.media * 100) / 100 : ''
@@ -448,13 +472,16 @@ function downloadExcel() {
   });
 
   var wb = XLSX.utils.book_new();
-  var ws = XLSX.utils.aoa_to_sheet(rows);
+  var ws = XLSX.utils.aoa_to_sheet(rows, {cellDates: true});
 
-  // Column widths
+  // Formato de fecha D/M/YY en columna C
+  var range = XLSX.utils.decode_range(ws['!ref']);
+  for (var row = 1; row <= range.e.r; row++) {
+    var cellRef = XLSX.utils.encode_cell({r: row, c: 2});
+    if (ws[cellRef]) ws[cellRef].z = 'd/m/yy';
+  }
+
   ws['!cols'] = [{wch:10},{wch:10},{wch:10},{wch:9},{wch:9},{wch:9}];
-
-  // Header style + capital row highlight (light blue bg)
-  // SheetJS community doesn't support styles, but the data is correct
   XLSX.utils.book_append_sheet(wb, ws, 'Temperaturas');
   XLSX.writeFile(wb, 'temperaturas_aemet_' + (new Date().toISOString().slice(0,10)) + '.xlsx');
 }
@@ -500,6 +527,8 @@ for (var i = 0; i < sortBtns.length; i++) {
 }
 
 init();
+updateExcelButton();
+setInterval(updateExcelButton, 60000);
 </script>
 </body>
 </html>
