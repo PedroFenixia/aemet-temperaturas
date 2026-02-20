@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temperaturas AEMET - Todas las poblaciones de Espa&ntilde;a</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#334155;--border:#475569;
+  --text:#f1f5f9;--muted:#94a3b8;--blue:#3b82f6;--red:#ef4444;
+  --orange:#f97316;--cyan:#06b6d4;--green:#22c55e;--purple:#8b5cf6;
+  --amber:#fbbf24;
+}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+
+.container{max-width:1400px;margin:0 auto;padding:1rem}
+
+header{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid var(--border);padding:1.5rem 0}
+header .container{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.logo h1{font-size:1.5rem;font-weight:700}
+.logo span{font-size:.85rem;color:var(--muted)}
+.meta{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+.badge{font-size:.75rem;padding:.35rem .7rem;border-radius:6px;background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.badge.highlight{background:rgba(59,130,246,.15);color:var(--blue);border-color:rgba(59,130,246,.3)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin:1.5rem 0}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem}
+.stat-card .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.4rem}
+.stat-card .value{font-size:1.8rem;font-weight:700}
+.stat-card .detail{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+.stat-card.hot .value{color:var(--red)}
+.stat-card.cold .value{color:var(--blue)}
+.stat-card.avg .value{color:var(--orange)}
+.stat-card.count .value{color:var(--cyan)}
+.stat-card.provs .value{color:var(--purple)}
+
+/* Controls */
+.controls{display:flex;gap:.75rem;margin:1.5rem 0;flex-wrap:wrap;align-items:center}
+.search-box{flex:1;min-width:200px;position:relative}
+.search-box input{width:100%;padding:.55rem 1rem .55rem 2.4rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;outline:none;transition:border-color .2s}
+.search-box input:focus{border-color:var(--blue)}
+.search-box svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted);width:16px;height:16px}
+select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:.85rem;outline:none;cursor:pointer}
+.btn-group{display:flex;gap:.2rem}
+.btn-group button{padding:.45rem .65rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-size:.75rem;transition:all .15s}
+.btn-group button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-group button:hover:not(.active){border-color:var(--blue)}
+
+/* Province cards */
+.provinces-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem}
+.prov-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.prov-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.prov-card.expanded{grid-column:1/-1}
+.prov-header{padding:1rem;display:flex;justify-content:space-between;align-items:center;background:var(--surface2)}
+.prov-header h3{font-size:.95rem;font-weight:600}
+.prov-header .prov-stats{display:flex;gap:.75rem;font-size:.8rem}
+.prov-header .t-min{color:var(--blue);font-weight:600}
+.prov-header .t-max{color:var(--red);font-weight:600}
+.prov-header .mun-count{color:var(--muted);font-size:.75rem}
+.prov-body{padding:0;max-height:0;overflow:hidden;transition:max-height .3s}
+.prov-card.expanded .prov-body{max-height:9999px}
+
+/* Province table */
+.prov-table{width:100%;border-collapse:collapse}
+.prov-table th{padding:.5rem .75rem;text-align:left;font-size:.7rem;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface)}
+.prov-table td{padding:.4rem .75rem;font-size:.85rem;border-bottom:1px solid rgba(71,85,105,.2)}
+.prov-table tr:hover{background:rgba(59,130,246,.04)}
+.prov-table tr.capital td{background:rgba(251,191,36,.06)}
+.prov-table .city{font-weight:500}
+.prov-table .city.is-capital{color:var(--amber);font-weight:700}
+.prov-table .pop{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.8rem}
+.prov-table .temp-min{color:var(--blue);font-weight:600;font-variant-numeric:tabular-nums}
+.prov-table .temp-max{color:var(--red);font-weight:600;font-variant-numeric:tabular-nums}
+.prov-table .temp-media{color:var(--orange);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Full table view */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem;display:none}
+.table-wrap.visible{display:block}
+.full-table{width:100%;border-collapse:collapse}
+.full-table thead th{background:var(--surface2);padding:.6rem .75rem;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;z-index:1}
+.full-table thead th:hover{color:var(--text)}
+.full-table tbody tr{border-bottom:1px solid rgba(71,85,105,.2);transition:background .1s}
+.full-table tbody tr:hover{background:rgba(59,130,246,.05)}
+.full-table td{padding:.45rem .75rem;font-size:.85rem;white-space:nowrap}
+.full-table .city{font-weight:500}
+.full-table .city.is-capital{color:var(--amber);font-weight:700}
+.full-table .prov{color:var(--muted);font-size:.8rem}
+.full-table .pop{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.full-table .temp-min{color:var(--blue);font-weight:600;text-align:center}
+.full-table .temp-max{color:var(--red);font-weight:600;text-align:center}
+.full-table .temp-media{color:var(--orange);font-weight:600;text-align:center}
+.scroll-container{max-height:70vh;overflow-y:auto}
+
+footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;border-top:1px solid var(--border)}
+.loading{text-align:center;padding:4rem;color:var(--muted)}
+.loading .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .controls{flex-direction:column}
+  .search-box{min-width:100%}
+  .provinces-grid{grid-template-columns:1fr}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo">
+      <h1>Temperaturas Espa&ntilde;a</h1>
+      <span>AEMET OpenData &middot; Todos los municipios</span>
+    </div>
+    <div class="meta">
+      <span class="badge highlight" id="total-badge">Cargando...</span>
+      <span class="badge" id="days-badge">--</span>
+      <span class="badge" id="updated">--</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card hot"><div class="label">M&aacute;s caliente</div><div class="value" id="stat-hot">--</div><div class="detail" id="stat-hot-city">--</div></div>
+    <div class="stat-card cold"><div class="label">M&aacute;s fr&iacute;a</div><div class="value" id="stat-cold">--</div><div class="detail" id="stat-cold-city">--</div></div>
+    <div class="stat-card avg"><div class="label">Media Espa&ntilde;a</div><div class="value" id="stat-avg">--</div><div class="detail">M&iacute;n / M&aacute;x</div></div>
+    <div class="stat-card count"><div class="label">Municipios</div><div class="value" id="stat-count">--</div><div class="detail" id="stat-ok">--</div></div>
+    <div class="stat-card provs"><div class="label">Provincias</div><div class="value" id="stat-provs">--</div><div class="detail">con datos</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="search" placeholder="Buscar municipio o provincia..." title="Buscar">
+    </div>
+    <select class="filter" id="date-filter" title="Filtrar por fecha">
+      <option value="">Todas las fechas</option>
+    </select>
+    <select class="filter" id="prov-filter" title="Filtrar por provincia">
+      <option value="">Todas las provincias</option>
+    </select>
+    <div class="btn-group">
+      <button data-view="cards" class="active" title="Vista tarjetas">Provincias</button>
+      <button data-view="table" title="Vista tabla">Tabla</button>
+    </div>
+    <div class="btn-group">
+      <button data-sort="name" class="active">A-Z</button>
+      <button data-sort="max-desc">M&aacute;x &darr;</button>
+      <button data-sort="min-asc">M&iacute;n &uarr;</button>
+      <button data-sort="pop">Habitantes</button>
+    </div>
+  </div>
+
+  <!-- Province cards view -->
+  <div class="provinces-grid" id="provinces-grid"></div>
+
+  <!-- Full table view -->
+  <div class="table-wrap" id="table-view">
+    <div class="scroll-container">
+      <table class="full-table">
+        <thead>
+          <tr>
+            <th>Municipio</th>
+            <th>Provincia</th>
+            <th>Fecha</th>
+            <th style="text-align:center">M&iacute;n &deg;C</th>
+            <th style="text-align:center">M&aacute;x &deg;C</th>
+            <th style="text-align:center">Media &deg;C</th>
+          </tr>
+        </thead>
+        <tbody id="full-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Datos de la Agencia Estatal de Meteorolog&iacute;a (AEMET) &middot; Actualizaci&oacute;n diaria autom&aacute;tica a las 11:30 CET &middot; &Uacute;ltimos 7 d&iacute;as
+</footer>
+
+<script>
+let DATA = null;
+let currentView = 'cards';
+let currentSort = 'name';
+let selectedDate = '';
+let expandedProv = null;
+
+async function init() {
+  try {
+    const resp = await fetch('data.json?' + Date.now());
+    DATA = await resp.json();
+    // Por defecto seleccionar la fecha más reciente
+    if (DATA.dias_disponibles && DATA.dias_disponibles.length) {
+      selectedDate = DATA.dias_disponibles[DATA.dias_disponibles.length - 1];
+    }
+    render();
+  } catch (e) {
+    document.getElementById('provinces-grid').innerHTML = '<div class="loading">Error cargando datos. Ejecuta el script primero.</div>';
+  }
+}
+
+function getFilteredRegistros() {
+  if (!DATA || !DATA.registros) return [];
+  let regs = DATA.registros;
+  const dateVal = document.getElementById('date-filter').value;
+  if (dateVal) {
+    regs = regs.filter(r => r.fecha === dateVal);
+  }
+  return regs;
+}
+
+function groupByProvince(registros) {
+  const byProv = {};
+  registros.forEach(r => {
+    const p = r.provincia || 'Desconocida';
+    if (!byProv[p]) byProv[p] = [];
+    byProv[p].push(r);
+  });
+  return Object.keys(byProv).sort().map(nombre => ({
+    nombre,
+    municipios: byProv[nombre]
+  }));
+}
+
+function render() {
+  if (!DATA) return;
+
+  document.getElementById('updated').textContent = 'Actualizado: ' + (DATA.actualizado || '--');
+  document.getElementById('total-badge').textContent = (DATA.total_municipios || 0).toLocaleString('es') + ' municipios';
+  const dias = DATA.dias_disponibles || [];
+  document.getElementById('days-badge').textContent = dias.length + ' d\u00edas';
+
+  // Date filter
+  const dateFilter = document.getElementById('date-filter');
+  const prevDate = dateFilter.value;
+  dateFilter.innerHTML = '<option value="">Todas las fechas</option>';
+  dias.slice().reverse().forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = formatDate(d);
+    dateFilter.appendChild(opt);
+  });
+  // Seleccionar la fecha más reciente por defecto si no hay selección previa
+  if (prevDate) {
+    dateFilter.value = prevDate;
+  } else if (selectedDate) {
+    dateFilter.value = selectedDate;
+  }
+
+  // Province filter
+  const provFilter = document.getElementById('prov-filter');
+  provFilter.innerHTML = '<option value="">Todas las provincias</option>';
+  const provs = groupByProvince(getFilteredRegistros());
+  provs.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.nombre;
+    opt.textContent = p.nombre + ' (' + p.municipios.length + ')';
+    provFilter.appendChild(opt);
+  });
+
+  renderStats();
+  renderProvinces();
+  renderFullTable();
+}
+
+function formatDate(dateStr) {
+  try {
+    const parts = dateStr.split('-');
+    return parseInt(parts[2]) + '/' + parseInt(parts[1]) + '/' + parts[0].slice(2);
+  } catch(e) { return dateStr; }
+}
+
+function renderStats() {
+  const all = getFilteredRegistros().filter(m => m.min !== null && m.max !== null);
+  if (!all.length) return;
+
+  let hottest = all[0], coldest = all[0];
+  let sumMin = 0, sumMax = 0;
+  all.forEach(m => {
+    if (m.max > hottest.max) hottest = m;
+    if (m.min < coldest.min) coldest = m;
+    sumMin += m.min;
+    sumMax += m.max;
+  });
+
+  const provsSet = new Set(all.map(r => r.provincia));
+
+  document.getElementById('stat-hot').textContent = hottest.max + '\u00b0';
+  document.getElementById('stat-hot-city').textContent = hottest.nombre + ' (' + hottest.provincia + ')';
+  document.getElementById('stat-cold').textContent = coldest.min + '\u00b0';
+  document.getElementById('stat-cold-city').textContent = coldest.nombre + ' (' + coldest.provincia + ')';
+  document.getElementById('stat-avg').textContent = Math.round(sumMin / all.length) + '\u00b0 / ' + Math.round(sumMax / all.length) + '\u00b0';
+  document.getElementById('stat-count').textContent = (DATA.total_municipios || 0).toLocaleString('es');
+  document.getElementById('stat-ok').textContent = all.length.toLocaleString('es') + ' registros';
+  document.getElementById('stat-provs').textContent = provsSet.size;
+}
+
+function getFilteredProvinces() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const provFilter = document.getElementById('prov-filter').value;
+  let provs = groupByProvince(getFilteredRegistros());
+
+  if (provFilter) {
+    provs = provs.filter(p => p.nombre === provFilter);
+  }
+
+  if (search) {
+    provs = provs.map(p => {
+      const filtered = p.municipios.filter(m =>
+        m.nombre.toLowerCase().includes(search) ||
+        (m.codigo || '').includes(search) ||
+        p.nombre.toLowerCase().includes(search)
+      );
+      return filtered.length ? { ...p, municipios: filtered } : null;
+    }).filter(Boolean);
+  }
+
+  return provs;
+}
+
+function sortMunicipios(municipios) {
+  const s = [...municipios];
+  switch (currentSort) {
+    case 'name': s.sort((a, b) => a.nombre.localeCompare(b.nombre)); break;
+    case 'max-desc': s.sort((a, b) => (b.max ?? -99) - (a.max ?? -99)); break;
+    case 'min-asc': s.sort((a, b) => (a.min ?? 99) - (b.min ?? 99)); break;
+    case 'pop': s.sort((a, b) => (b.hab || 0) - (a.hab || 0)); break;
+  }
+  return s;
+}
+
+function renderProvinces() {
+  const grid = document.getElementById('provinces-grid');
+  const provs = getFilteredProvinces();
+
+  grid.innerHTML = provs.map(p => {
+    const valid = p.municipios.filter(m => m.min !== null && m.max !== null);
+    if (!valid.length) return '';
+    const minVal = Math.min(...valid.map(m => m.min));
+    const maxVal = Math.max(...valid.map(m => m.max));
+    const isExpanded = expandedProv === p.nombre;
+    const sorted = sortMunicipios(p.municipios);
+    const showDate = !document.getElementById('date-filter').value;
+
+    const rows = sorted.map(m => {
+      const isCapital = m.capital;
+      const mediaStr = m.media !== null && m.media !== undefined ? m.media.toFixed(1) + '\u00b0' : '-';
+      return `<tr class="${isCapital ? 'capital' : ''}">
+        <td class="city ${isCapital ? 'is-capital' : ''}">${m.nombre}${isCapital ? ' \u2605' : ''}</td>
+        ${showDate ? '<td style="color:var(--muted);font-size:.8rem">' + formatDate(m.fecha) + '</td>' : ''}
+        <td class="temp-min">${m.min !== null ? m.min + '\u00b0' : '-'}</td>
+        <td class="temp-max">${m.max !== null ? m.max + '\u00b0' : '-'}</td>
+        <td class="temp-media">${mediaStr}</td>
+      </tr>`;
+    }).join('');
+
+    return `<div class="prov-card ${isExpanded ? 'expanded' : ''}" data-prov="${p.nombre}" onclick="toggleProv('${p.nombre.replace(/'/g, "\\'")}')">
+      <div class="prov-header">
+        <div>
+          <h3>${p.nombre}</h3>
+          <span class="mun-count">${p.municipios.length} registros</span>
+        </div>
+        <div class="prov-stats">
+          <span class="t-min">${minVal}\u00b0</span>
+          <span style="color:var(--muted)">/</span>
+          <span class="t-max">${maxVal}\u00b0</span>
+        </div>
+      </div>
+      <div class="prov-body">
+        <table class="prov-table">
+          <thead><tr><th>Municipio</th>${showDate ? '<th>Fecha</th>' : ''}<th>M\u00edn</th><th>M\u00e1x</th><th>Media</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFullTable() {
+  const tbody = document.getElementById('full-tbody');
+  const provs = getFilteredProvinces();
+  const all = [];
+  provs.forEach(p => {
+    p.municipios.forEach(m => {
+      all.push({ ...m, provincia: m.provincia || p.nombre });
+    });
+  });
+
+  const sorted = sortMunicipios(all);
+  const display = sorted.slice(0, 500);
+
+  tbody.innerHTML = display.map(m => {
+    const mediaStr = m.media !== null && m.media !== undefined ? m.media.toFixed(1) + '\u00b0' : '-';
+    return `<tr>
+      <td class="city ${m.capital ? 'is-capital' : ''}">${m.nombre}${m.capital ? ' \u2605' : ''}</td>
+      <td class="prov">${m.provincia}</td>
+      <td style="color:var(--muted)">${formatDate(m.fecha)}</td>
+      <td class="temp-min">${m.min !== null ? m.min + '\u00b0' : '-'}</td>
+      <td class="temp-max">${m.max !== null ? m.max + '\u00b0' : '-'}</td>
+      <td class="temp-media">${mediaStr}</td>
+    </tr>`;
+  }).join('');
+
+  if (sorted.length > 500) {
+    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--muted)">Mostrando 500 de ${sorted.length.toLocaleString('es')} registros. Usa los filtros para ver m\u00e1s.</td></tr>`;
+  }
+}
+
+function toggleProv(nombre) {
+  expandedProv = expandedProv === nombre ? null : nombre;
+  renderProvinces();
+}
+
+function updateView() {
+  document.getElementById('provinces-grid').style.display = currentView === 'cards' ? 'grid' : 'none';
+  document.getElementById('table-view').className = 'table-wrap' + (currentView === 'table' ? ' visible' : '');
+}
+
+// Events
+document.getElementById('search').addEventListener('input', () => {
+  renderProvinces();
+  renderFullTable();
+});
+
+document.getElementById('date-filter').addEventListener('change', () => {
+  expandedProv = null;
+  renderStats();
+  renderProvinces();
+  renderFullTable();
+});
+
+document.getElementById('prov-filter').addEventListener('change', () => {
+  expandedProv = null;
+  renderProvinces();
+  renderFullTable();
+});
+
+document.querySelectorAll('[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentView = btn.dataset.view;
+    updateView();
+  });
+});
+
+document.querySelectorAll('[data-sort]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-sort]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSort = btn.dataset.sort;
+    renderProvinces();
+    renderFullTable();
+  });
+});
+
+init();
+</script>
+</body>
+</html>
