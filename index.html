@@ -422,25 +422,29 @@ function updateView() {
 function downloadExcel() {
   var regs = getFilteredRegistros().filter(function(r){ return r.min !== null && r.max !== null; });
   regs.sort(function(a,b){
-    if (a.provincia < b.provincia) return -1;
-    if (a.provincia > b.provincia) return 1;
+    var pa = (a.codigo || '').substring(0,2);
+    var pb = (b.codigo || '').substring(0,2);
+    if (pa < pb) return -1;
+    if (pa > pb) return 1;
     if (a.fecha < b.fecha) return -1;
     if (a.fecha > b.fecha) return 1;
-    return a.nombre.localeCompare(b.nombre);
+    return 0;
   });
 
   var BOM = '\uFEFF';
   var sep = ';';
-  var lines = ['Provincia' + sep + 'Municipio' + sep + 'C\u00f3digo' + sep + 'Fecha' + sep + 'M\u00edn' + sep + 'M\u00e1x' + sep + 'Media'];
+  var lines = ['Provincia' + sep + 'Cod.INE' + sep + 'Fecha' + sep + 'M\u00e1xima' + sep + 'M\u00ednima' + sep + 'T'];
   regs.forEach(function(r) {
+    var codProv = parseInt((r.codigo || '').substring(0,2)) || '';
+    var codINE = parseInt(r.codigo) || r.codigo;
+    var media = (r.media !== null && r.media !== undefined) ? r.media.toFixed(2).replace('.', ',') : '';
     lines.push(
-      r.provincia + sep +
-      r.nombre + sep +
-      r.codigo + sep +
+      codProv + sep +
+      codINE + sep +
       formatDate(r.fecha) + sep +
-      (r.min !== null ? r.min : '') + sep +
       (r.max !== null ? r.max : '') + sep +
-      (r.media !== null ? r.media.toFixed(1) : '')
+      (r.min !== null ? r.min : '') + sep +
+      media
     );
   });
 
