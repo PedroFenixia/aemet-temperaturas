@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temperaturas AEMET - Todas las poblaciones de Espa&ntilde;a</title>
+<title>Temperaturas AEMET - Capitales de provincia</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -14,7 +14,6 @@
 }
 body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 a{color:var(--blue);text-decoration:none}
-
 .container{max-width:1400px;margin:0 auto;padding:1rem}
 
 header{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid var(--border);padding:1.5rem 0}
@@ -25,11 +24,10 @@ header .container{display:flex;align-items:center;justify-content:space-between;
 .badge{font-size:.75rem;padding:.35rem .7rem;border-radius:6px;background:var(--surface);color:var(--muted);border:1px solid var(--border)}
 .badge.highlight{background:rgba(59,130,246,.15);color:var(--blue);border-color:rgba(59,130,246,.3)}
 
-/* Stats */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin:1.5rem 0}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem}
-.stat-card .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.4rem}
-.stat-card .value{font-size:1.8rem;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:1.5rem 0}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem}
+.stat-card .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.3rem}
+.stat-card .value{font-size:1.6rem;font-weight:700}
 .stat-card .detail{font-size:.75rem;color:var(--muted);margin-top:.2rem}
 .stat-card.hot .value{color:var(--red)}
 .stat-card.cold .value{color:var(--blue)}
@@ -37,7 +35,6 @@ header .container{display:flex;align-items:center;justify-content:space-between;
 .stat-card.count .value{color:var(--cyan)}
 .stat-card.provs .value{color:var(--purple)}
 
-/* Controls */
 .controls{display:flex;gap:.75rem;margin:1.5rem 0;flex-wrap:wrap;align-items:center}
 .search-box{flex:1;min-width:200px;position:relative}
 .search-box input{width:100%;padding:.55rem 1rem .55rem 2.4rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;outline:none;transition:border-color .2s}
@@ -48,8 +45,9 @@ select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid v
 .btn-group button{padding:.45rem .65rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-size:.75rem;transition:all .15s}
 .btn-group button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .btn-group button:hover:not(.active){border-color:var(--blue)}
+.btn-excel{padding:.45rem .85rem;background:var(--green);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.75rem;font-weight:600;transition:opacity .15s}
+.btn-excel:hover{opacity:.85}
 
-/* Province cards */
 .provinces-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem}
 .prov-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
 .prov-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
@@ -59,11 +57,10 @@ select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid v
 .prov-header .prov-stats{display:flex;gap:.5rem;font-size:.75rem}
 .prov-header .t-min{color:var(--blue);font-weight:600}
 .prov-header .t-max{color:var(--red);font-weight:600}
-.prov-header .mun-count{color:var(--muted);font-size:.75rem}
+.prov-header .mun-count{color:var(--muted);font-size:.7rem}
 .prov-body{padding:0;max-height:0;overflow:hidden;transition:max-height .3s}
 .prov-card.expanded .prov-body{max-height:9999px}
 
-/* Province table */
 .prov-table{width:100%;border-collapse:collapse}
 .prov-table th{padding:.5rem .75rem;text-align:left;font-size:.7rem;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface)}
 .prov-table td{padding:.4rem .75rem;font-size:.85rem;border-bottom:1px solid rgba(71,85,105,.2)}
@@ -71,12 +68,10 @@ select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid v
 .prov-table tr.capital td{background:rgba(251,191,36,.06)}
 .prov-table .city{font-weight:500}
 .prov-table .city.is-capital{color:var(--amber);font-weight:700}
-.prov-table .pop{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.8rem}
 .prov-table .temp-min{color:var(--blue);font-weight:600;font-variant-numeric:tabular-nums}
 .prov-table .temp-max{color:var(--red);font-weight:600;font-variant-numeric:tabular-nums}
 .prov-table .temp-media{color:var(--orange);font-weight:600;font-variant-numeric:tabular-nums}
 
-/* Full table view */
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem;display:none}
 .table-wrap.visible{display:block}
 .full-table{width:100%;border-collapse:collapse}
@@ -88,7 +83,6 @@ select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid v
 .full-table .city{font-weight:500}
 .full-table .city.is-capital{color:var(--amber);font-weight:700}
 .full-table .prov{color:var(--muted);font-size:.8rem}
-.full-table .pop{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
 .full-table .temp-min{color:var(--blue);font-weight:600;text-align:center}
 .full-table .temp-max{color:var(--red);font-weight:600;text-align:center}
 .full-table .temp-media{color:var(--orange);font-weight:600;text-align:center}
@@ -121,7 +115,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;b
   <div class="container">
     <div class="logo">
       <h1>Temperaturas Espa&ntilde;a</h1>
-      <span>AEMET OpenData &middot; Todos los municipios</span>
+      <span>AEMET OpenData &middot; Capitales de provincia</span>
     </div>
     <div class="meta">
       <span class="badge highlight" id="total-badge">Cargando...</span>
@@ -133,16 +127,14 @@ footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;b
 
 <main class="container">
 
-  <!-- Stats -->
   <div class="stats">
     <div class="stat-card hot"><div class="label">M&aacute;s caliente</div><div class="value" id="stat-hot">--</div><div class="detail" id="stat-hot-city">--</div></div>
     <div class="stat-card cold"><div class="label">M&aacute;s fr&iacute;a</div><div class="value" id="stat-cold">--</div><div class="detail" id="stat-cold-city">--</div></div>
     <div class="stat-card avg"><div class="label">Media Espa&ntilde;a</div><div class="value" id="stat-avg">--</div><div class="detail">M&iacute;n / M&aacute;x</div></div>
-    <div class="stat-card count"><div class="label">Municipios</div><div class="value" id="stat-count">--</div><div class="detail" id="stat-ok">--</div></div>
+    <div class="stat-card count"><div class="label">Capitales</div><div class="value" id="stat-count">--</div><div class="detail" id="stat-ok">--</div></div>
     <div class="stat-card provs"><div class="label">Provincias</div><div class="value" id="stat-provs">--</div><div class="detail">con datos</div></div>
   </div>
 
-  <!-- Controls -->
   <div class="controls">
     <div class="search-box">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -162,14 +154,12 @@ footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;b
       <button data-sort="name" class="active">A-Z</button>
       <button data-sort="max-desc">M&aacute;x &darr;</button>
       <button data-sort="min-asc">M&iacute;n &uarr;</button>
-      <button data-sort="pop">Habitantes</button>
     </div>
+    <button class="btn-excel" id="btn-excel" title="Descargar Excel CSV">&#x1F4E5; Excel</button>
   </div>
 
-  <!-- Province cards view -->
   <div class="provinces-grid" id="provinces-grid"></div>
 
-  <!-- Full table view -->
   <div class="table-wrap" id="table-view">
     <div class="scroll-container">
       <table class="full-table">
@@ -198,290 +188,313 @@ footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;b
 let DATA = null;
 let currentView = 'cards';
 let currentSort = 'name';
-let selectedDate = '';
 let expandedProv = null;
 
 async function init() {
-  const grid = document.getElementById('provinces-grid');
+  var grid = document.getElementById('provinces-grid');
   grid.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando datos...</div>';
   try {
-    const resp = await fetch('data.json?' + Date.now());
+    var resp = await fetch('data.json?' + Date.now());
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     DATA = await resp.json();
     if (!DATA.registros || !DATA.registros.length) {
-      grid.innerHTML = '<div class="loading">No hay registros en data.json. Ejecuta el script primero.</div>';
+      grid.innerHTML = '<div class="loading">No hay registros. Ejecuta el script primero.</div>';
       return;
-    }
-    if (DATA.dias_disponibles && DATA.dias_disponibles.length) {
-      selectedDate = DATA.dias_disponibles[DATA.dias_disponibles.length - 1];
     }
     render();
   } catch (e) {
-    grid.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+    grid.innerHTML = '<div class="loading">Error cargando datos: ' + e.message + '</div>';
     console.error('init error:', e);
   }
 }
 
+function formatDate(ds) {
+  if (!ds) return '--';
+  var p = ds.split('-');
+  return parseInt(p[2]) + '/' + parseInt(p[1]) + '/' + p[0].slice(2);
+}
+
 function getFilteredRegistros() {
   if (!DATA || !DATA.registros) return [];
-  let regs = DATA.registros;
-  const dateVal = document.getElementById('date-filter').value;
-  if (dateVal) {
-    regs = regs.filter(r => r.fecha === dateVal);
-  }
+  var regs = DATA.registros;
+  var dv = document.getElementById('date-filter').value;
+  if (dv) regs = regs.filter(function(r){ return r.fecha === dv; });
   return regs;
 }
 
 function groupByProvince(registros) {
-  const byProv = {};
-  registros.forEach(r => {
-    const p = r.provincia || 'Desconocida';
+  var byProv = {};
+  registros.forEach(function(r) {
+    var p = r.provincia || 'Desconocida';
     if (!byProv[p]) byProv[p] = [];
     byProv[p].push(r);
   });
-  return Object.keys(byProv).sort().map(nombre => ({
-    nombre,
-    municipios: byProv[nombre]
-  }));
+  return Object.keys(byProv).sort().map(function(nombre) {
+    return { nombre: nombre, municipios: byProv[nombre] };
+  });
 }
 
 function render() {
   if (!DATA) return;
   try {
+    document.getElementById('updated').textContent = 'Actualizado: ' + (DATA.actualizado || '--');
+    document.getElementById('total-badge').textContent = (DATA.total_municipios || 0) + ' capitales';
+    var dias = DATA.dias_disponibles || [];
+    document.getElementById('days-badge').textContent = dias.length + ' d\u00edas';
 
-  document.getElementById('updated').textContent = 'Actualizado: ' + (DATA.actualizado || '--');
-  document.getElementById('total-badge').textContent = (DATA.total_municipios || 0).toLocaleString('es') + ' municipios';
-  const dias = DATA.dias_disponibles || [];
-  document.getElementById('days-badge').textContent = dias.length + ' d\u00edas';
+    // Date filter
+    var dateFilter = document.getElementById('date-filter');
+    var prevDate = dateFilter.value;
+    dateFilter.innerHTML = '<option value="">Todas las fechas (' + dias.length + ' d\u00edas)</option>';
+    dias.slice().reverse().forEach(function(d) {
+      var opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = formatDate(d);
+      dateFilter.appendChild(opt);
+    });
+    if (prevDate && dias.indexOf(prevDate) !== -1) {
+      dateFilter.value = prevDate;
+    }
 
-  // Date filter
-  const dateFilter = document.getElementById('date-filter');
-  const prevDate = dateFilter.value;
-  dateFilter.innerHTML = '<option value="">Todas las fechas</option>';
-  dias.slice().reverse().forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d;
-    opt.textContent = formatDate(d);
-    dateFilter.appendChild(opt);
-  });
-  // Seleccionar la fecha más reciente por defecto si no hay selección previa
-  if (prevDate) {
-    dateFilter.value = prevDate;
-  } else if (selectedDate) {
-    dateFilter.value = selectedDate;
-  }
+    // Province filter
+    var provFilter = document.getElementById('prov-filter');
+    var prevProv = provFilter.value;
+    provFilter.innerHTML = '<option value="">Todas las provincias</option>';
+    var provs = groupByProvince(getFilteredRegistros());
+    provs.forEach(function(p) {
+      var opt = document.createElement('option');
+      opt.value = p.nombre;
+      opt.textContent = p.nombre + ' (' + p.municipios.length + ')';
+      provFilter.appendChild(opt);
+    });
+    if (prevProv) provFilter.value = prevProv;
 
-  // Province filter
-  const provFilter = document.getElementById('prov-filter');
-  provFilter.innerHTML = '<option value="">Todas las provincias</option>';
-  const provs = groupByProvince(getFilteredRegistros());
-  provs.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.nombre;
-    opt.textContent = p.nombre + ' (' + p.municipios.length + ')';
-    provFilter.appendChild(opt);
-  });
-
-  renderStats();
-  renderProvinces();
-  renderFullTable();
-
+    renderStats();
+    renderProvinces();
+    renderFullTable();
   } catch(e) {
     console.error('render error:', e);
-    document.getElementById('provinces-grid').innerHTML = '<div class="loading">Error renderizando: ' + e.message + '</div>';
+    document.getElementById('provinces-grid').innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
   }
-}
-
-function formatDate(dateStr) {
-  try {
-    const parts = dateStr.split('-');
-    return parseInt(parts[2]) + '/' + parseInt(parts[1]) + '/' + parts[0].slice(2);
-  } catch(e) { return dateStr; }
 }
 
 function renderStats() {
-  const all = getFilteredRegistros().filter(m => m.min !== null && m.max !== null);
+  var all = getFilteredRegistros().filter(function(m){ return m.min !== null && m.max !== null; });
   if (!all.length) return;
 
-  let hottest = all[0], coldest = all[0];
-  let sumMin = 0, sumMax = 0;
-  all.forEach(m => {
+  var hottest = all[0], coldest = all[0];
+  var sumMin = 0, sumMax = 0;
+  all.forEach(function(m) {
     if (m.max > hottest.max) hottest = m;
     if (m.min < coldest.min) coldest = m;
     sumMin += m.min;
     sumMax += m.max;
   });
 
-  const provsSet = new Set(all.map(r => r.provincia));
+  var provsSet = {};
+  all.forEach(function(r){ provsSet[r.provincia] = true; });
 
   document.getElementById('stat-hot').textContent = hottest.max + '\u00b0';
   document.getElementById('stat-hot-city').textContent = hottest.nombre + ' (' + hottest.provincia + ')';
   document.getElementById('stat-cold').textContent = coldest.min + '\u00b0';
   document.getElementById('stat-cold-city').textContent = coldest.nombre + ' (' + coldest.provincia + ')';
   document.getElementById('stat-avg').textContent = Math.round(sumMin / all.length) + '\u00b0 / ' + Math.round(sumMax / all.length) + '\u00b0';
-  document.getElementById('stat-count').textContent = (DATA.total_municipios || 0).toLocaleString('es');
-  document.getElementById('stat-ok').textContent = all.length.toLocaleString('es') + ' registros';
-  document.getElementById('stat-provs').textContent = provsSet.size;
+  document.getElementById('stat-count').textContent = DATA.total_municipios || 0;
+  document.getElementById('stat-ok').textContent = all.length + ' registros';
+  document.getElementById('stat-provs').textContent = Object.keys(provsSet).length;
 }
 
 function getFilteredProvinces() {
-  const search = document.getElementById('search').value.toLowerCase();
-  const provFilter = document.getElementById('prov-filter').value;
-  let provs = groupByProvince(getFilteredRegistros());
+  var search = document.getElementById('search').value.toLowerCase();
+  var provVal = document.getElementById('prov-filter').value;
+  var provs = groupByProvince(getFilteredRegistros());
 
-  if (provFilter) {
-    provs = provs.filter(p => p.nombre === provFilter);
+  if (provVal) {
+    provs = provs.filter(function(p){ return p.nombre === provVal; });
   }
-
   if (search) {
-    provs = provs.map(p => {
-      const filtered = p.municipios.filter(m =>
-        m.nombre.toLowerCase().includes(search) ||
-        (m.codigo || '').includes(search) ||
-        p.nombre.toLowerCase().includes(search)
-      );
-      return filtered.length ? { ...p, municipios: filtered } : null;
+    provs = provs.map(function(p) {
+      var filtered = p.municipios.filter(function(m){
+        return m.nombre.toLowerCase().indexOf(search) !== -1 ||
+               (m.codigo || '').indexOf(search) !== -1 ||
+               p.nombre.toLowerCase().indexOf(search) !== -1;
+      });
+      return filtered.length ? { nombre: p.nombre, municipios: filtered } : null;
     }).filter(Boolean);
   }
-
   return provs;
 }
 
-function sortMunicipios(municipios) {
-  const s = [...municipios];
+function sortMunicipios(list) {
+  var s = list.slice();
   switch (currentSort) {
-    case 'name': s.sort((a, b) => a.nombre.localeCompare(b.nombre)); break;
-    case 'max-desc': s.sort((a, b) => (b.max ?? -99) - (a.max ?? -99)); break;
-    case 'min-asc': s.sort((a, b) => (a.min ?? 99) - (b.min ?? 99)); break;
-    case 'pop': s.sort((a, b) => (b.hab || 0) - (a.hab || 0)); break;
+    case 'name': s.sort(function(a,b){ return a.nombre.localeCompare(b.nombre); }); break;
+    case 'max-desc': s.sort(function(a,b){ return (b.max||0) - (a.max||0); }); break;
+    case 'min-asc': s.sort(function(a,b){ return (a.min||99) - (b.min||99); }); break;
   }
   return s;
 }
 
 function renderProvinces() {
-  const grid = document.getElementById('provinces-grid');
-  const provs = getFilteredProvinces();
+  var grid = document.getElementById('provinces-grid');
+  var provs = getFilteredProvinces();
+  var showDate = !document.getElementById('date-filter').value;
 
-  grid.innerHTML = provs.map(p => {
-    const valid = p.municipios.filter(m => m.min !== null && m.max !== null);
-    if (!valid.length) return '';
-    const minVal = Math.min(...valid.map(m => m.min));
-    const maxVal = Math.max(...valid.map(m => m.max));
-    const isExpanded = expandedProv === p.nombre;
-    const sorted = sortMunicipios(p.municipios);
-    const showDate = !document.getElementById('date-filter').value;
+  var html = '';
+  provs.forEach(function(p) {
+    var valid = p.municipios.filter(function(m){ return m.min !== null && m.max !== null; });
+    if (!valid.length) return;
+    var mins = valid.map(function(m){ return m.min; });
+    var maxs = valid.map(function(m){ return m.max; });
+    var minVal = Math.min.apply(null, mins);
+    var maxVal = Math.max.apply(null, maxs);
+    var isExp = expandedProv === p.nombre;
+    var sorted = sortMunicipios(p.municipios);
 
-    const rows = sorted.map(m => {
-      const isCapital = m.capital;
-      const mediaStr = m.media !== null && m.media !== undefined ? m.media.toFixed(1) + '\u00b0' : '-';
-      return `<tr class="${isCapital ? 'capital' : ''}">
-        <td class="city ${isCapital ? 'is-capital' : ''}">${m.nombre}${isCapital ? ' \u2605' : ''}</td>
-        ${showDate ? '<td style="color:var(--muted);font-size:.8rem">' + formatDate(m.fecha) + '</td>' : ''}
-        <td class="temp-min">${m.min !== null ? m.min + '\u00b0' : '-'}</td>
-        <td class="temp-max">${m.max !== null ? m.max + '\u00b0' : '-'}</td>
-        <td class="temp-media">${mediaStr}</td>
-      </tr>`;
-    }).join('');
+    var rows = '';
+    sorted.forEach(function(m) {
+      var isCap = m.capital;
+      var mediaStr = (m.media !== null && m.media !== undefined) ? m.media.toFixed(1) + '\u00b0' : '-';
+      rows += '<tr class="' + (isCap ? 'capital' : '') + '">';
+      rows += '<td class="city ' + (isCap ? 'is-capital' : '') + '">' + m.nombre + (isCap ? ' \u2605' : '') + '</td>';
+      if (showDate) rows += '<td style="color:var(--muted);font-size:.8rem">' + formatDate(m.fecha) + '</td>';
+      rows += '<td class="temp-min">' + (m.min !== null ? m.min + '\u00b0' : '-') + '</td>';
+      rows += '<td class="temp-max">' + (m.max !== null ? m.max + '\u00b0' : '-') + '</td>';
+      rows += '<td class="temp-media">' + mediaStr + '</td>';
+      rows += '</tr>';
+    });
 
-    return `<div class="prov-card ${isExpanded ? 'expanded' : ''}" data-prov="${p.nombre}" onclick="toggleProv('${p.nombre.replace(/'/g, "\\'")}')">
-      <div class="prov-header">
-        <div>
-          <h3>${p.nombre}</h3>
-          <span class="mun-count">${p.municipios.length} registros</span>
-        </div>
-        <div class="prov-stats">
-          <span class="t-min">${minVal}\u00b0</span>
-          <span style="color:var(--muted)">/</span>
-          <span class="t-max">${maxVal}\u00b0</span>
-        </div>
-      </div>
-      <div class="prov-body">
-        <table class="prov-table">
-          <thead><tr><th>Municipio</th>${showDate ? '<th>Fecha</th>' : ''}<th>M\u00edn</th><th>M\u00e1x</th><th>Media</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    </div>`;
-  }).join('');
+    var escapedName = p.nombre.replace(/'/g, "\\'");
+    html += '<div class="prov-card ' + (isExp ? 'expanded' : '') + '" onclick="toggleProv(\'' + escapedName + '\')">';
+    html += '<div class="prov-header"><div>';
+    html += '<h3>' + p.nombre + '</h3>';
+    html += '<span class="mun-count">' + p.municipios.length + ' reg.</span>';
+    html += '</div><div class="prov-stats">';
+    html += '<span class="t-min">' + minVal + '\u00b0</span>';
+    html += '<span style="color:var(--muted)"> / </span>';
+    html += '<span class="t-max">' + maxVal + '\u00b0</span>';
+    html += '</div></div>';
+    html += '<div class="prov-body"><table class="prov-table">';
+    html += '<thead><tr><th>Municipio</th>' + (showDate ? '<th>Fecha</th>' : '') + '<th>M\u00edn</th><th>M\u00e1x</th><th>Media</th></tr></thead>';
+    html += '<tbody>' + rows + '</tbody></table></div></div>';
+  });
+
+  grid.innerHTML = html || '<div class="loading">No se encontraron resultados</div>';
 }
 
 function renderFullTable() {
-  const tbody = document.getElementById('full-tbody');
-  const provs = getFilteredProvinces();
-  const all = [];
-  provs.forEach(p => {
-    p.municipios.forEach(m => {
-      all.push({ ...m, provincia: m.provincia || p.nombre });
+  var tbody = document.getElementById('full-tbody');
+  var provs = getFilteredProvinces();
+  var all = [];
+  provs.forEach(function(p) {
+    p.municipios.forEach(function(m) {
+      all.push(m);
     });
   });
+  var sorted = sortMunicipios(all);
 
-  const sorted = sortMunicipios(all);
-  const display = sorted.slice(0, 10000);
-
-  tbody.innerHTML = display.map(m => {
-    const mediaStr = m.media !== null && m.media !== undefined ? m.media.toFixed(1) + '\u00b0' : '-';
-    return `<tr>
-      <td class="city ${m.capital ? 'is-capital' : ''}">${m.nombre}${m.capital ? ' \u2605' : ''}</td>
-      <td class="prov">${m.provincia}</td>
-      <td style="color:var(--muted)">${formatDate(m.fecha)}</td>
-      <td class="temp-min">${m.min !== null ? m.min + '\u00b0' : '-'}</td>
-      <td class="temp-max">${m.max !== null ? m.max + '\u00b0' : '-'}</td>
-      <td class="temp-media">${mediaStr}</td>
-    </tr>`;
-  }).join('');
-
-  if (sorted.length > 500) {
-    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--muted)">Mostrando 500 de ${sorted.length.toLocaleString('es')} registros. Usa los filtros para ver m\u00e1s.</td></tr>`;
-  }
+  var html = '';
+  sorted.forEach(function(m) {
+    var mediaStr = (m.media !== null && m.media !== undefined) ? m.media.toFixed(1) + '\u00b0' : '-';
+    html += '<tr>';
+    html += '<td class="city ' + (m.capital ? 'is-capital' : '') + '">' + m.nombre + (m.capital ? ' \u2605' : '') + '</td>';
+    html += '<td class="prov">' + (m.provincia || '') + '</td>';
+    html += '<td style="color:var(--muted)">' + formatDate(m.fecha) + '</td>';
+    html += '<td class="temp-min">' + (m.min !== null ? m.min + '\u00b0' : '-') + '</td>';
+    html += '<td class="temp-max">' + (m.max !== null ? m.max + '\u00b0' : '-') + '</td>';
+    html += '<td class="temp-media">' + mediaStr + '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
 }
 
 function toggleProv(nombre) {
-  expandedProv = expandedProv === nombre ? null : nombre;
+  expandedProv = (expandedProv === nombre) ? null : nombre;
   renderProvinces();
 }
 
 function updateView() {
-  document.getElementById('provinces-grid').style.display = currentView === 'cards' ? 'grid' : 'none';
+  document.getElementById('provinces-grid').style.display = (currentView === 'cards') ? 'grid' : 'none';
   document.getElementById('table-view').className = 'table-wrap' + (currentView === 'table' ? ' visible' : '');
 }
 
+// Excel CSV download
+function downloadExcel() {
+  var regs = getFilteredRegistros().filter(function(r){ return r.min !== null && r.max !== null; });
+  regs.sort(function(a,b){
+    if (a.provincia < b.provincia) return -1;
+    if (a.provincia > b.provincia) return 1;
+    if (a.fecha < b.fecha) return -1;
+    if (a.fecha > b.fecha) return 1;
+    return a.nombre.localeCompare(b.nombre);
+  });
+
+  var BOM = '\uFEFF';
+  var sep = ';';
+  var lines = ['Provincia' + sep + 'Municipio' + sep + 'C\u00f3digo' + sep + 'Fecha' + sep + 'M\u00edn' + sep + 'M\u00e1x' + sep + 'Media'];
+  regs.forEach(function(r) {
+    lines.push(
+      r.provincia + sep +
+      r.nombre + sep +
+      r.codigo + sep +
+      formatDate(r.fecha) + sep +
+      (r.min !== null ? r.min : '') + sep +
+      (r.max !== null ? r.max : '') + sep +
+      (r.media !== null ? r.media.toFixed(1) : '')
+    );
+  });
+
+  var csv = BOM + lines.join('\r\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'temperaturas_aemet_' + (new Date().toISOString().slice(0,10)) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 // Events
-document.getElementById('search').addEventListener('input', () => {
+document.getElementById('search').addEventListener('input', function() {
   renderProvinces();
   renderFullTable();
 });
 
-document.getElementById('date-filter').addEventListener('change', () => {
+document.getElementById('date-filter').addEventListener('change', function() {
   expandedProv = null;
-  renderStats();
-  renderProvinces();
-  renderFullTable();
+  render();
 });
 
-document.getElementById('prov-filter').addEventListener('change', () => {
+document.getElementById('prov-filter').addEventListener('change', function() {
   expandedProv = null;
   renderProvinces();
   renderFullTable();
 });
 
-document.querySelectorAll('[data-view]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentView = btn.dataset.view;
+document.getElementById('btn-excel').addEventListener('click', downloadExcel);
+
+var viewBtns = document.querySelectorAll('[data-view]');
+for (var i = 0; i < viewBtns.length; i++) {
+  viewBtns[i].addEventListener('click', function() {
+    for (var j = 0; j < viewBtns.length; j++) viewBtns[j].classList.remove('active');
+    this.classList.add('active');
+    currentView = this.getAttribute('data-view');
     updateView();
   });
-});
+}
 
-document.querySelectorAll('[data-sort]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-sort]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentSort = btn.dataset.sort;
+var sortBtns = document.querySelectorAll('[data-sort]');
+for (var i = 0; i < sortBtns.length; i++) {
+  sortBtns[i].addEventListener('click', function() {
+    for (var j = 0; j < sortBtns.length; j++) sortBtns[j].classList.remove('active');
+    this.classList.add('active');
+    currentSort = this.getAttribute('data-sort');
     renderProvinces();
     renderFullTable();
   });
-});
+}
 
 init();
 </script>
