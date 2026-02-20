@@ -196,16 +196,23 @@ let selectedDate = '';
 let expandedProv = null;
 
 async function init() {
+  const grid = document.getElementById('provinces-grid');
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando datos...</div>';
   try {
     const resp = await fetch('data.json?' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
     DATA = await resp.json();
-    // Por defecto seleccionar la fecha más reciente
+    if (!DATA.registros || !DATA.registros.length) {
+      grid.innerHTML = '<div class="loading">No hay registros en data.json. Ejecuta el script primero.</div>';
+      return;
+    }
     if (DATA.dias_disponibles && DATA.dias_disponibles.length) {
       selectedDate = DATA.dias_disponibles[DATA.dias_disponibles.length - 1];
     }
     render();
   } catch (e) {
-    document.getElementById('provinces-grid').innerHTML = '<div class="loading">Error cargando datos. Ejecuta el script primero.</div>';
+    grid.innerHTML = '<div class="loading">Error: ' + e.message + '</div>';
+    console.error('init error:', e);
   }
 }
 
@@ -234,6 +241,7 @@ function groupByProvince(registros) {
 
 function render() {
   if (!DATA) return;
+  try {
 
   document.getElementById('updated').textContent = 'Actualizado: ' + (DATA.actualizado || '--');
   document.getElementById('total-badge').textContent = (DATA.total_municipios || 0).toLocaleString('es') + ' municipios';
@@ -271,6 +279,11 @@ function render() {
   renderStats();
   renderProvinces();
   renderFullTable();
+
+  } catch(e) {
+    console.error('render error:', e);
+    document.getElementById('provinces-grid').innerHTML = '<div class="loading">Error renderizando: ' + e.message + '</div>';
+  }
 }
 
 function formatDate(dateStr) {
