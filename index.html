@@ -50,13 +50,13 @@ select.filter{padding:.55rem .75rem;background:var(--surface);border:1px solid v
 .btn-group button:hover:not(.active){border-color:var(--blue)}
 
 /* Province cards */
-.provinces-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem}
+.provinces-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem}
 .prov-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
 .prov-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
 .prov-card.expanded{grid-column:1/-1}
-.prov-header{padding:1rem;display:flex;justify-content:space-between;align-items:center;background:var(--surface2)}
-.prov-header h3{font-size:.95rem;font-weight:600}
-.prov-header .prov-stats{display:flex;gap:.75rem;font-size:.8rem}
+.prov-header{padding:.75rem;display:flex;justify-content:space-between;align-items:center;background:var(--surface2)}
+.prov-header h3{font-size:.85rem;font-weight:600}
+.prov-header .prov-stats{display:flex;gap:.5rem;font-size:.75rem}
 .prov-header .t-min{color:var(--blue);font-weight:600}
 .prov-header .t-max{color:var(--red);font-weight:600}
 .prov-header .mun-count{color:var(--muted);font-size:.75rem}
@@ -99,10 +99,16 @@ footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;b
 .loading .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+@media(max-width:1200px){
+  .provinces-grid{grid-template-columns:repeat(3,1fr)}
+}
 @media(max-width:768px){
   .stats{grid-template-columns:repeat(2,1fr)}
   .controls{flex-direction:column}
   .search-box{min-width:100%}
+  .provinces-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
   .provinces-grid{grid-template-columns:1fr}
 }
 </style>
