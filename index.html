@@ -445,7 +445,7 @@ function updateExcelButton() {
 
 function downloadExcel() {
   if (!isExcelAvailable()) return;
-  var regs = getFilteredRegistros().filter(function(r){ return r.capital && r.min !== null && r.max !== null; });
+  var regs = (DATA.registros || []).filter(function(r){ return r.capital && r.min !== null && r.max !== null; });
   regs.sort(function(a,b){
     var pa = (a.codigo || '').substring(0,2);
     var pb = (b.codigo || '').substring(0,2);
